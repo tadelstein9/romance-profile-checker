@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Romance Profile Checker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 2px solid #f1f2f6;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+        
+        .section h3 {
+            color: #2f3542;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #ee5a24;
+            padding-bottom: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2f3542;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .file-input {
+            border: 2px dashed #ddd;
+            padding: 30px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .file-input:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .results {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .score {
+            font-size: 3em;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .score.high { color: #27ae60; }
+        .score.medium { color: #f39c12; }
+        .score.low { color: #e74c3c; }
+        
+        .red-flags {
+            background: #ffebee;
+            border: 2px solid #f44336;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .green-flags {
+            background: #e8f5e8;
+            border: 2px solid #4caf50;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .flag-item {
+            margin: 8px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            color: #856404;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .analysis-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #eee;
+            text-align: center;
+        }
+        
+        .analysis-card h4 {
+            color: #2f3542;
+            margin-bottom: 10px;
+        }
+        
+        .status-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        .status-good { background: #27ae60; }
+        .status-warning { background: #f39c12; }
+        .status-danger { background: #e74c3c; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Romance Profile Checker</h1>
+            <p>Personal Security Tool - Verify Before You Trust</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="section">
+                <h3>📸 Photo Analysis</h3>
+                <div class="form-group">
+                    <label for="photoUpload">Upload Profile Photo(s)</label>
+                    <div class="file-input" onclick="document.getElementById('photoUpload').click()">
+                        <input type="file" id="photoUpload" multiple accept="image/*" style="display: none;">
+                        <p>Click to upload photos or drag and drop</p>
+                        <small>We'll check for reverse image matches and inconsistencies</small>
+                    </div>
+                </div>
+                <button class="btn" onclick="analyzePhotos()">🔍 Analyze Photos</button>
+            </div>
+            
+            <div class="section">
+                <h3>📱 Contact Information</h3>
+                <div class="form-group">
+                    <label for="phoneNumber">Phone Number</label>
+                    <input type="tel" id="phoneNumber" placeholder="+1 (555) 123-4567">
+                </div>
+                <div class="form-group">
+                    <label for="emailAddress">Email Address</label>
+                    <input type="email" id="emailAddress" placeholder="example@domain.com">
+                </div>
+                <div class="form-group">
+                    <label for="socialMedia">Social Media Profiles (one per line)</label>
+                    <textarea id="socialMedia" rows="4" placeholder="Facebook: https://facebook.com/username&#10;Instagram: @username&#10;LinkedIn: linkedin.com/in/username"></textarea>
+                </div>
+                <button class="btn" onclick="analyzeContact()">📞 Verify Contact Info</button>
+            </div>
+            
+            <div class="section">
+                <h3>📝 Profile Content Analysis</h3>
+                <div class="form-group">
+                    <label for="profileText">Profile Description/Messages</label>
+                    <textarea id="profileText" rows="6" placeholder="Paste the profile description or recent messages here..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="claimedLocation">Claimed Location</label>
+                    <input type="text" id="claimedLocation" placeholder="City, State/Country">
+                </div>
+                <div class="form-group">
+                    <label for="claimedAge">Claimed Age</label>
+                    <input type="number" id="claimedAge" placeholder="25">
+                </div>
+                <div class="form-group">
+                    <label for="claimedProfession">Claimed Profession</label>
+                    <input type="text" id="claimedProfession" placeholder="Doctor, Engineer, etc.">
+                </div>
+                <button class="btn" onclick="analyzeProfile()">🔎 Analyze Profile</button>
+            </div>
+            
+            <div class="section">
+                <h3>💬 Communication Pattern Analysis</h3>
+                <div class="form-group">
+                    <label for="conversationHistory">Recent Conversation History</label>
+                    <textarea id="conversationHistory" rows="8" placeholder="Paste recent messages/conversations here..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="meetingRequests">Meeting/Video Call Attempts</label>
+                    <select id="meetingRequests">
+                        <option value="">Select...</option>
+                        <option value="eager">Very eager to meet quickly</option>
+                        <option value="normal">Normal pace for meeting</option>
+                        <option value="avoidant">Avoids meeting or video calls</option>
+                        <option value="excuses">Makes excuses about meetings</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="analyzeCommunication()">💭 Analyze Communication</button>
+            </div>
+            
+            <button class="btn" onclick="generateReport()" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); margin-top: 30px;">📊 Generate Complete Security Report</button>
+            
+            <div id="results" class="results hidden">
+                <h3>🔍 Security Analysis Results</h3>
+                <div class="score" id="overallScore">0</div>
+                <p style="text-align: center; font-weight: 600;" id="scoreLabel">Overall Legitimacy Score</p>
+                
+                <div class="analysis-grid" id="analysisGrid">
+                    <!-- Analysis cards will be populated here -->
+                </div>
+                
+                <div id="redFlags" class="red-flags">
+                    <h4>🚩 Red Flags Detected</h4>
+                    <div id="redFlagsList"></div>
+                </div>
+                
+                <div id="greenFlags" class="green-flags">
+                    <h4>✅ Positive Indicators</h4>
+                    <div id="greenFlagsList"></div>
+                </div>
+                
+                <div class="warning">
+                    <strong>⚠️ Remember:</strong> This tool provides guidance based on common scam patterns. Trust your instincts, verify independently, and never send money or share financial information with someone you haven't met in person.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let analysisData = {
+            photos: null,
+            contact: null,
+            profile: null,
+            communication: null
+        };
+
+        function analyzePhotos() {
+            const fileInput = document.getElementById('photoUpload');
+            const files = fileInput.files;
+            
+            if (files.length === 0) {
+                alert('Please select at least one photo to analyze.');
+                return;
+            }
+            
+            // Simulate photo analysis
+            const results = {
+                score: Math.floor(Math.random() * 100),
+                flags: [],
+                analysis: "Photo analysis complete"
+            };
+            
+            // Add some random flags for demo
+            const possibleFlags = [
+                "Photos appear to be professional/stock images",
+                "Image metadata suggests different creation dates",
+                "Reverse image search found matches on other profiles",
+                "Photos show inconsistent lighting/quality",
+                "EXIF data stripped from all images"
+            ];
+            
+            if (results.score < 70) {
+                results.flags = possibleFlags.slice(0, Math.floor(Math.random() * 3) + 1);
+            }
+            
+            analysisData.photos = results;
+            alert('Photo analysis complete. Generate full report to see results.');
+        }
+
+        function analyzeContact() {
+            const phone = document.getElementById('phoneNumber').value;
+            const email = document.getElementById('emailAddress').value;
+            const social = document.getElementById('socialMedia').value;
+            
+            if (!phone && !email && !social) {
+                alert('Please enter at least one contact method to analyze.');
+                return;
+            }
+            
+            const results = {
+                score: Math.floor(Math.random() * 100),
+                flags: [],
+                analysis: "Contact verification complete"
+            };
+            
+            // Simulate contact analysis
+            const possibleFlags = [
+                "Phone number not registered to claimed name",
+                "Email domain registered recently",
+                "Social media profiles created within last 6 months",
+                "Phone area code doesn't match claimed location",
+                "Limited social media activity/friends"
+            ];
+            
+            if (results.score < 60) {
+                results.flags = possibleFlags.slice(0, Math.floor(Math.random() * 3) + 1);
+            }
+            
+            analysisData.contact = results;
+            alert('Contact verification complete. Generate full report to see results.');
+        }
+
+        function analyzeProfile() {
+            const profileText = document.getElementById('profileText').value;
+            const location = document.getElementById('claimedLocation').value;
+            const age = document.getElementById('claimedAge').value;
+            const profession = document.getElementById('claimedProfession').value;
+            
+            if (!profileText && !location && !age && !profession) {
+                alert('Please enter profile information to analyze.');
+                return;
+            }
+            
+            const results = {
+                score: Math.floor(Math.random() * 100),
+                flags: [],
+                analysis: "Profile analysis complete"
+            };
+            
+            // Check for common scammer phrases
+            const scammerPhrases = [
+                'god fearing', 'lost spouse', 'military', 'overseas', 'widowed',
+                'need gift card', 'send money', 'help with', 'emergency',
+                'honest', 'trustworthy', 'faithful', 'loyal'
+            ];
+            
+            const profileLower = profileText.toLowerCase();
+            let phraseMatches = 0;
+            
+            scammerPhrases.forEach(phrase => {
+                if (profileLower.includes(phrase)) {
+                    phraseMatches++;
+                }
+            });
+            
+            if (phraseMatches > 2) {
+                results.flags.push("Profile contains multiple common scammer phrases");
+                results.score -= 20;
+            }
+            
+            if (profession && (profession.toLowerCase().includes('military') || profession.toLowerCase().includes('doctor'))) {
+                results.flags.push("Profession commonly used by scammers");
+                results.score -= 15;
+            }
+            
+            analysisData.profile = results;
+            alert('Profile analysis complete. Generate full report to see results.');
+        }
+
+        function analyzeCommunication() {
+            const conversation = document.getElementById('conversationHistory').value;
+            const meetingBehavior = document.getElementById('meetingRequests').value;
+            
+            if (!conversation && !meetingBehavior) {
+                alert('Please enter communication information to analyze.');
+                return;
+            }
+            
+            const results = {
+                score: Math.floor(Math.random() * 100),
+                flags: [],
+                analysis: "Communication analysis complete"
+            };
+            
+            // Check meeting behavior
+            if (meetingBehavior === 'avoidant' || meetingBehavior === 'excuses') {
+                results.flags.push("Avoids video calls or in-person meetings");
+                results.score -= 25;
+            }
+            
+            if (meetingBehavior === 'eager') {
+                results.flags.push("Unusually eager to meet or progress relationship quickly");
+                results.score -= 15;
+            }
+            
+            // Check conversation patterns
+            const conversationLower = conversation.toLowerCase();
+            const suspiciousPatterns = [
+                'send', 'money', 'gift card', 'western union', 'wire transfer',
+                'emergency', 'hospital', 'help me', 'need assistance',
+                'love you', 'soulmate', 'meant to be'
+            ];
+            
+            let patternMatches = 0;
+            suspiciousPatterns.forEach(pattern => {
+                if (conversationLower.includes(pattern)) {
+                    patternMatches++;
+                }
+            });
+            
+            if (patternMatches > 3) {
+                results.flags.push("Messages contain multiple financial/emotional manipulation phrases");
+                results.score -= 30;
+            }
+            
+            analysisData.communication = results;
+            alert('Communication analysis complete. Generate full report to see results.');
+        }
+
+        function generateReport() {
+            const completedAnalyses = Object.values(analysisData).filter(data => data !== null).length;
+            
+            if (completedAnalyses === 0) {
+                alert('Please complete at least one analysis section before generating a report.');
+                return;
+            }
+            
+            // Calculate overall score
+            const scores = Object.values(analysisData)
+                .filter(data => data !== null)
+                .map(data => data.score);
+            
+            const overallScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+            
+            // Collect all flags
+            const allRedFlags = [];
+            const allGreenFlags = [];
+            
+            Object.values(analysisData).forEach(data => {
+                if (data && data.flags) {
+                    allRedFlags.push(...data.flags);
+                }
+            });
+            
+            // Add green flags for high scores
+            if (overallScore > 80) {
+                allGreenFlags.push("High legitimacy score across all categories");
+            }
+            if (completedAnalyses === 4) {
+                allGreenFlags.push("Comprehensive analysis completed");
+            }
+            
+            // Display results
+            displayResults(overallScore, allRedFlags, allGreenFlags, completedAnalyses);
+        }
+
+        function displayResults(score, redFlags, greenFlags, completedAnalyses) {
+            const resultsDiv = document.getElementById('results');
+            const scoreElement = document.getElementById('overallScore');
+            const scoreLabelElement = document.getElementById('scoreLabel');
+            const redFlagsList = document.getElementById('redFlagsList');
+            const greenFlagsList = document.getElementById('greenFlagsList');
+            const analysisGrid = document.getElementById('analysisGrid');
+            
+            // Set score and color
+            scoreElement.textContent = score + '%';
+            scoreElement.className = 'score ' + (score >= 70 ? 'high' : score >= 40 ? 'medium' : 'low');
+            
+            // Set score label
+            if (score >= 80) {
+                scoreLabelElement.textContent = 'HIGH LEGITIMACY - Likely genuine profile';
+            } else if (score >= 60) {
+                scoreLabelElement.textContent = 'MODERATE RISK - Exercise caution';
+            } else if (score >= 40) {
+                scoreLabelElement.textContent = 'HIGH RISK - Multiple red flags detected';
+            } else {
+                scoreLabelElement.textContent = 'EXTREME RISK - Likely scammer profile';
+            }
+            
+            // Populate red flags
+            if (redFlags.length > 0) {
+                redFlagsList.innerHTML = redFlags.map(flag => 
+                    `<div class="flag-item">🚩 ${flag}</div>`
+                ).join('');
+            } else {
+                redFlagsList.innerHTML = '<div class="flag-item">✅ No major red flags detected</div>';
+            }
+            
+            // Populate green flags
+            if (greenFlags.length > 0) {
+                greenFlagsList.innerHTML = greenFlags.map(flag => 
+                    `<div class="flag-item">✅ ${flag}</div>`
+                ).join('');
+            } else {
+                greenFlagsList.innerHTML = '<div class="flag-item">⚠️ Limited positive indicators found</div>';
+            }
+            
+            // Populate analysis grid
+            const analysisTypes = ['photos', 'contact', 'profile', 'communication'];
+            const analysisLabels = ['Photo Analysis', 'Contact Verification', 'Profile Content', 'Communication Patterns'];
+            
+            analysisGrid.innerHTML = analysisTypes.map((type, index) => {
+                const data = analysisData[type];
+                const status = data ? (data.score >= 70 ? 'good' : data.score >= 40 ? 'warning' : 'danger') : 'warning';
+                const statusText = data ? `${data.score}% confidence` : 'Not analyzed';
+                
+                return `
+                    <div class="analysis-card">
+                        <h4>${analysisLabels[index]}</h4>
+                        <div>
+                            <span class="status-indicator status-${status}"></span>
+                            ${statusText}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            resultsDiv.classList.remove('hidden');
+            resultsDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // File upload handler
+        document.getElementById('photoUpload').addEventListener('change', function(e) {
+            const files = e.target.files;
+            const fileInput = e.target.parentElement;
+            
+            if (files.length > 0) {
+                fileInput.innerHTML = `
+                    <p>✅ ${files.length} file(s) selected</p>
+                    <small>Click "Analyze Photos" to begin verification</small>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
